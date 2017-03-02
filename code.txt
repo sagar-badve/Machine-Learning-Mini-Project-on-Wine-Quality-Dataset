@@ -1,0 +1,91 @@
+#################################################################################################################################################################
+#Machine Learning Mini-Project on Wine Quality Dataset
+import pandas as pd
+import os
+from sklearn import preprocessing
+from sklearn import tree
+from sklearn import metrics
+from sklearn import svm
+from sklearn.cross_validation import train_test_split
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import chi2
+from sklearn.feature_selection import f_classif
+
+os.chdir('directory path')
+data_file=pd.read_csv("filename.csv")
+col=data_file.columns
+di={"Three":3,"Four":4,"Five":5,"Six":6,"Seven":7,"Eight":8,"Nine":9}
+target=data_file[col[-1]]
+target=target.map(di)
+
+#Feature Selection
+predictor=data_file[col[:-1]]
+x_new = SelectKBest(chi2, k='all')
+x_new.fit_transform(predictor,target)
+for i in x_new.scores_:
+    print(float(i))
+
+predictor=data_file[col[:-1]]
+x_new = SelectKBest(f_classif, k='all')
+x_new.fit_transform(predictor,target)
+for i in x_new.scores_:
+    print(float(i))
+
+fe=['pH', 'sulphates', 'volatile acidity', 'citric acid', 'chlorides', 'free sulfur dioxide','fixed acidity','residual sugar','total sulfur dioxide','alcohol']
+
+predictor2=data_file[fe[:]]
+predictor_norm=preprocessing.normalize(predictor)
+predictor_scaled= preprocessing.scale(predictor)
+train_X, test_X, train_Y, test_Y =  train_test_split(predictor2, target, test_size = 0.4, random_state = 9)
+
+#Random Forest
+from sklearn.ensemble import RandomForestClassifier
+rf_classifier = RandomForestClassifier(n_estimators = 100)
+rf_classifier.fit(train_X, train_Y)
+predicted = rf_classifier.predict(test_X)
+
+print("Random Forest Result")
+print("Accuracy: " + str(metrics.accuracy_score(test_Y, predicted)))
+print("\nThe confusion matrix is: ")
+print(metrics.confusion_matrix(test_Y, predicted))
+print(metrics.classification_report(test_Y, predicted,  target_names =  ["Three", "Four","Five","six","Seven","Eight", "Nine"]))
+
+#Decision Tree
+classifier=tree.DecisionTreeClassifier(criterion='entropy') #default criterion is gini impurity
+classifier=classifier.fit(train_X, train_Y)
+predicted=classifier.predict(test_X)
+
+print("Decision Tree")
+print("Accuracy: " + str(metrics.accuracy_score(test_Y, predicted)))
+print("\nThe confusion matrix is: ")
+print(metrics.confusion_matrix(test_Y, predicted))
+print(metrics.classification_report(test_Y, predicted,  target_names =  ["Three", "Four","Five","six","Seven","Eight", "Nine"]))
+
+# SVM
+clf = svm.SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0, decision_function_shape=None, degree=3, gamma='auto', kernel='rbf', max_iter=-1, probability=False, random_state=None, shrinking=True, tol=0.001, verbose=False)
+clf.fit(train_X, train_Y)  
+predicted=clf.predict(test_X)
+
+print("SVM")
+print("Accuracy: " + str(metrics.accuracy_score(test_Y, predicted)))
+print("\nThe confusion matrix is: ")
+print(metrics.confusion_matrix(test_Y, predicted))
+print(metrics.classification_report(test_Y, predicted,  target_names =  ["Three", "Four","Five","six","Seven","Eight", "Nine"]))
+
+# Extra Trees
+from sklearn.ensemble import ExtraTreesClassifier
+clf=ExtraTreesClassifier(n_estimators=10, criterion='gini', max_depth=None, min_samples_split=2, 
+                             min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features='auto', max_leaf_nodes=None, 
+                             bootstrap=False, oob_score=False, n_jobs=1, random_state=None, verbose=0, warm_start=False, class_weight=None)
+                             
+clf.fit(train_X, train_Y)  
+predicted=clf.predict(test_X)
+
+print("Extra Trees")
+print("Accuracy: " + str(metrics.accuracy_score(test_Y, predicted)))
+print("\nThe confusion matrix is: ")
+print(metrics.confusion_matrix(test_Y, predicted))
+print(metrics.classification_report(test_Y, predicted,  target_names =  ["Three", "Four","Five","six","Seven","Eight", "Nine"]))
+
+#################################################################################################################################################################
+
